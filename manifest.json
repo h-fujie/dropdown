@@ -2,5 +2,14 @@
     "name": "dropdown custom",
     "version": "0.0.0.1",
     "manifest_version": 3,
-    "description": "dropdown sample extension"
+    "description": "dropdown sample extension",
+    "content_scripts": [
+        {
+            "matches": ["http://*/*", "https://*/*"],
+            "css": ["dropdown.css"],
+            "js": ["dropdown.js"],
+            "run_at": "document_end",
+            "all_frames": false
+        }
+    ]
 }

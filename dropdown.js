@@ -282,4 +282,5 @@
             dropdown.render();
         }
     };
+    FJ.dropdown();
 })(window);
