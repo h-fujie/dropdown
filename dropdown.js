@@ -110,31 +110,43 @@
                     this.close();
                 }
             });
+            return this;
         },
         renderWrapper: function() {
             let wrapper = Utils.element("<span class='fj-wrapper'></span>");
             wrapper.addEventListener("keydown", (event) => {
-                if (event.code === "ArrowUp") {
-                    this.cursor(-1);
-                } else if (event.code === "ArrowDown") {
-                    this.cursor(1);
-                } else if (event.code === "Enter" || event.code === "Tab") {
-                    if (event.isComposing) {
-                        this.rerenderOptions();
-                    } else {
-                        let focus = this.el.options.querySelectorAll(".focus");
-                        this.value(focus.length === 0 ? this.el.input.value : focus[0].innerText);
-                        this.close();
-                    }
+                switch (event.code) {
+                    case "ArrowUp":
+                        this.cursor(-1);
+                        break;
+                    case "ArrowDown":
+                        this.cursor(1);
+                        break;
+                    case "Enter":
+                    case "Tab":
+                        if (event.isComposing) {
+                            this.rerenderOptions();
+                        } else {
+                            let focus = this.el.options.querySelectorAll(".focus");
+                            this.value(focus.length === 0 ? this.el.input.value : focus[0].innerText);
+                            this.close();
+                        }
+                        break;
+                    default:
+                        break;
                 }
             });
             wrapper.addEventListener("keyup", (event) => {
-                if (event.code === "Backspace" || event.code === "Delete") {
-                    this.rerenderOptions();
+                switch (event.code) {
+                    case "ArrowUp":
+                    case "ArrowDown":
+                    case "Enter":
+                    case "Tab":
+                        break;
+                    default:
+                        this.rerenderOptions();
+                        break;
                 }
-            });
-            wrapper.addEventListener("keypress", (event) => {
-                this.rerenderOptions();
             });
             return wrapper;
         },
@@ -215,20 +227,21 @@
         cursor: function(cursor) {
             let options = this.el.options;
             if (!this.isOpen()) {
-                return false;
+                return this;
             }
             let focused = options.querySelectorAll(".focus");
             if (focused.length === 0) {
                 options.children[cursor > 0 ? 0 : options.children.length - 1].classList.add("focus");
-                return false;
+                return this;
             }
             let newIndex = Utils.indexOf(options.children, focused[0]) + cursor;
             focused[0].classList.remove("focus");
             if (newIndex < 0 || newIndex > options.children.length - 1) {
                 this.el.input.focus();
-                return false;
+                return this;
             }
             options.children[newIndex].classList.add("focus");
+            return this;
         },
         value: function(value) {
             if (arguments.length === 0) {
