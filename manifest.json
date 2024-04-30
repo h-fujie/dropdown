@@ -1,13 +1,20 @@
 {
-    "name": "dropdown custom",
+    "name": "Dropdown Customizer",
     "version": "0.0.0.1",
     "manifest_version": 3,
-    "description": "dropdown sample extension",
+    "description": "ドロップダウンをコンボボックスに変換します",
     "content_scripts": [
         {
             "matches": ["http://*/*", "https://*/*"],
-            "css": ["dropdown.css"],
-            "js": ["dropdown.js"],
+            "css": [
+                "ext/jquery/jquery-ui.min.css",
+                "dropdown.css"
+            ],
+            "js": [
+                "ext/jquery/jquery-3.7.1.min.js",
+                "ext/jquery/jquery-ui.min.js",
+                "dropdown.js"
+            ],
             "run_at": "document_end",
             "all_frames": false
         }

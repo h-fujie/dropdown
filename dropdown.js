@@ -1,286 +1,138 @@
-(function(window) {
-    "use strict";
-    let Utils = {
-        next: function(element, newElement) {
-            element.parentNode.insertBefore(newElement, element.nextElementSibling);
-        },
-        style: function(element, pseudoElt) {
-            return window.getComputedStyle(element, pseudoElt);
-        },
-        element: function(html) {
-            let el = document.createElement("span");
-            el.innerHTML = html;
-            return el.firstElementChild;
-        },
-        formatFourPx: function(px) {
-            return `${px.top}px ${px.right}px ${px.bottom}px ${px.left}px`;
-        },
-        indexOf: function(elements, element) {
-            return Array.from(elements).indexOf(element);
-        }
-    };
-    let Dropdown = function(select) {
-        this.select = select;
-        this.items = Array.from(select.children, option => {
-            return {
-                value: option.value,
-                label: option.innerText
-            };
+"use strict";
+$.widget("custom.combobox", {
+    _create: function() {
+        this.wrapper = $("<span>")
+            .addClass("fj-combobox")
+            .insertAfter(this.element);
+
+        this.element.hide();
+        this._createAutocomplete();
+        this._createShowAllButton();
+    },
+
+    _createAutocomplete: function() {
+        let selected = this.element.children(":selected");
+        let value = selected.val() ? selected.text() : "";
+
+        this.input = $("<input>")
+            .appendTo(this.wrapper)
+            .val(value)
+            .attr("title", "")
+            .addClass("fj-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left")
+            .autocomplete({
+                delay: 0,
+                minLength: 0,
+                source: this._source.bind(this)
+            })
+            .tooltip({
+                classes: {
+                    "ui-tooltip": "ui-state-highlight"
+                }
+            });
+
+        this._on(this.input, {
+            autocompleteselect: function(event, ui) {
+                ui.item.option.selected = true;
+                this._trigger("select", event, {
+                    item: ui.item.option
+                });
+            },
+
+            autocompletechange: "_removeIfInvalid"
         });
-        let style = Utils.style(select);
-        this.selectStyle = {
-            height: select.clientHeight,
-            width: select.clientWidth,
-            margin: {
-                top: Number(style.marginTop.replace(/px$/, "")),
-                right: Number(style.marginRight.replace(/px$/, "")),
-                bottom: Number(style.marginBottom.replace(/px$/, "")),
-                left: Number(style.marginLeft.replace(/px$/, "")),
-            },
-            padding: {
-                top: Number(style.paddingTop.replace(/px$/, "")),
-                right: Number(style.paddingRight.replace(/px$/, "")),
-                bottom: Number(style.paddingBottom.replace(/px$/, "")),
-                left: Number(style.paddingLeft.replace(/px$/, "")),
-            },
-            border: {
-                width: Number(style.borderWidth.replace(/px$/, ""))
-            },
-            font: {
-                size: Number(style.fontSize.replace(/px$/, ""))
-            }
-        };
-        this.inputStyle = {
-            height: this.selectStyle.height,
-            width: this.selectStyle.width
-                    - this.selectStyle.height
-                    - this.selectStyle.padding.right
-                    - this.selectStyle.padding.left,
-            margin: this.selectStyle.margin,
-            padding: {
-                top: 0,
-                right: this.selectStyle.padding.right + this.selectStyle.height,
-                bottom: 0,
-                left: this.selectStyle.padding.left
-            },
-            font: this.selectStyle.font
-        };
-        this.buttonStyle = {
-            height: this.selectStyle.height,
-            width: this.selectStyle.height,
-            left: - (this.selectStyle.padding.right + this.selectStyle.height)
-        };
-        this.optionsStyle = {
-            top: this.selectStyle.height + this.selectStyle.margin.top + 2 * this.selectStyle.border.width,
-            left: this.selectStyle.margin.left
-        };
-        this.optionStyle = {
-            width: this.selectStyle.width - this.selectStyle.padding.right - this.selectStyle.padding.left,
-            font: this.selectStyle.font
-        };
-    };
-    Dropdown.prototype = {
-        render: function() {
-            if (this.select.multiple) {
-                console.log("ID '%s' is not single select.", this.select.id);
-                return false;
-            }
-            let wrapper = this.renderWrapper();
+    },
 
-            let input = this.renderInput();
-            wrapper.append(input);
+    _createShowAllButton: function() {
+        let input = this.input
+        let wasOpen = false;
 
-            let button = this.renderButton();
-            wrapper.append(button);
-
-            let options = this.renderOptions();
-            wrapper.append(options);
-
-            Utils.next(this.select, wrapper);
-            this.el = {
-                wrapper: wrapper,
-                input: input,
-                button: button,
-                options: options
-            };
-
-            window.addEventListener("click", (event) => {
-                if (event.target.closest(".fj-wrapper") !== wrapper) {
-                    this.value(this.el.input.value);
-                    this.close();
+        $("<a>").attr("tabIndex", -1)
+            .tooltip({
+                classes: {
+                    "ui-tooltip": "ui-state-highlight"
                 }
-            });
-            return this;
-        },
-        renderWrapper: function() {
-            let wrapper = Utils.element("<span class='fj-wrapper'></span>");
-            wrapper.addEventListener("keydown", (event) => {
-                switch (event.code) {
-                    case "ArrowUp":
-                        this.cursor(-1);
-                        break;
-                    case "ArrowDown":
-                        this.cursor(1);
-                        break;
-                    case "Enter":
-                    case "Tab":
-                        if (event.isComposing) {
-                            this.rerenderOptions();
-                        } else {
-                            let focus = this.el.options.querySelectorAll(".focus");
-                            this.value(focus.length === 0 ? this.el.input.value : focus[0].innerText);
-                            this.close();
-                        }
-                        break;
-                    default:
-                        break;
+            })
+            .appendTo(this.wrapper)
+            .button({
+                icons: {
+                    primary: "ui-icon-triangle-1-s"
+                },
+                text: false
+            })
+            .removeClass("ui-corner-all")
+            .addClass("fj-combobox-toggle ui-corner-right")
+            .on("mousedown", function() {
+                wasOpen = input.autocomplete("widget").is(":visible");
+            })
+            .on("click", function() {
+                input.trigger("focus");
+
+                // Close if already visible
+                if (wasOpen) {
+                    return;
                 }
+
+                // Pass empty string as value to search for, displaying all results
+                input.autocomplete("search", "");
             });
-            wrapper.addEventListener("keyup", (event) => {
-                switch (event.code) {
-                    case "ArrowUp":
-                    case "ArrowDown":
-                    case "Enter":
-                    case "Tab":
-                        break;
-                    default:
-                        this.rerenderOptions();
-                        break;
-                }
-            });
-            return wrapper;
-        },
-        renderInput: function() {
-            let input = Utils.element("<input class='fj-input' type='text'/>");
-            input.style.height = this.inputStyle.height + "px";
-            input.style.width = this.inputStyle.width + "px";
-            input.style.margin = Utils.formatFourPx(this.inputStyle.margin);
-            input.style.padding = Utils.formatFourPx(this.inputStyle.padding);
-            input.style.fontSize = this.inputStyle.font.size + "px";
-            input.addEventListener("keydown", (event) => {
-                if (event.code === "ArrowUp" || event.code === "ArrowDown") {
-                    this.open();
-                }
-            });
-            return input;
-        },
-        renderButton: function() {
-            let button = Utils.element("<a class='fj-expansion' href='#'>&nbsp;</a>");
-            button.style.height = this.buttonStyle.height + "px";
-            button.style.width = this.buttonStyle.width + "px";
-            button.style.left = this.buttonStyle.left + "px";
-            button.addEventListener("click", (event) => {
-                this.isOpen() ? this.close() : this.open();
-            });
-            return button;
-        },
-        renderOptions: function() {
-            let options = Utils.element("<ul class='fj-options'></ul>");
-            options.style.display = "none";
-            options.style.top = this.optionsStyle.top + "px";
-            options.style.left = this.optionsStyle.left + "px";
-            return options;
-        },
-        rerenderOptions: function() {
-            let items = this.items.filter((item) => item.label.indexOf(this.el.input.value) > -1);
-            let options = this.el.options.cloneNode(false);
-            for (let idx = 0; idx < items.length; idx++) {
-                options.append(this.renderOption(items[idx]));
-            }
-            this.el.wrapper.replaceChild(options, this.el.options);
-            this.el.options = options;
-            return options;
-        },
-        renderOption: function(item) {
-            let option = Utils.element("<li></li>");
-            option.dataset.value = item.value;
-            option.innerText = item.label;
-            option.style.width = this.optionStyle.width + "px";
-            option.style.fontSize = this.optionStyle.font.size + "px";
-            option.addEventListener("mouseover", (event) => {
-                this.el.options.querySelectorAll("li").forEach((option) => option.classList.remove("focus"));
-                event.target.classList.add("focus");
-            });
-            option.addEventListener("click", (event) => {
-                this.value(event.target.innerText);
-                this.close();
-            });
-            return option;
-        },
-        open: function() {
-            if (!this.isOpen()) {
-                this.rerenderOptions();
-                this.el.options.style.display = "block";
-            }
-            return this;
-        },
-        close: function() {
-            if (this.isOpen()) {
-                this.el.options.querySelectorAll("li").forEach((option) => option.classList.remove("focus"));
-                this.el.options.style.display = "none";
-            }
-            return this;
-        },
-        isOpen: function() {
-            return this.el.options.style.display === "block";
-        },
-        cursor: function(cursor) {
-            let options = this.el.options;
-            if (!this.isOpen()) {
-                return this;
-            }
-            let focused = options.querySelectorAll(".focus");
-            if (focused.length === 0) {
-                options.children[cursor > 0 ? 0 : options.children.length - 1].classList.add("focus");
-                return this;
-            }
-            let newIndex = Utils.indexOf(options.children, focused[0]) + cursor;
-            focused[0].classList.remove("focus");
-            if (newIndex < 0 || newIndex > options.children.length - 1) {
-                this.el.input.focus();
-                return this;
-            }
-            options.children[newIndex].classList.add("focus");
-            return this;
-        },
-        value: function(value) {
-            if (arguments.length === 0) {
-                return this.select.value;
-            }
-            let item = this.items.find((item) => item.label === value);
-            if (!item) {
-                this.select.value = "";
-                this.el.input.value = "";
-                console.warn(`無効な値です：${value}`);
-                return false;
-            }
-            this.select.value = item.value;
-            this.el.input.value = item.label;
-            return this;
+    },
+
+    _source: function(request, response) {
+        let matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term),"i");
+        response(this.element.children("option").map(function() {
+            var text = $(this).text();
+            if (this.value && (!request.term || matcher.test(text)))
+                return {
+                    label: text,
+                    value: text,
+                    option: this
+                };
+        }));
+    },
+
+    _removeIfInvalid: function(event, ui) {
+
+        // Selected an item, nothing to do
+        if (ui.item) {
+            return;
         }
+
+        // Search for a match (case-insensitive)
+        let value = this.input.val();
+        let valueLowerCase = value.toLowerCase();
+        let valid = false;
+        this.element.children("option").each(function() {
+            if ($(this).text().toLowerCase() === valueLowerCase) {
+                this.selected = valid = true;
+                return false;
+            }
+        });
+
+        // Found a match, nothing to do
+        if (valid) {
+            return;
+        }
+
+        // Remove invalid value
+        this.input.val("")
+            .attr("title", `無効な値です：${value}`)
+            .tooltip("open");
+        this.element.val("");
+        this._delay(function() {
+            this.input.tooltip("close").attr("title", "");
+        }, 2500);
+        this.input.autocomplete("instance").term = "";
+    },
+
+    _destroy: function() {
+        this.wrapper.remove();
+        this.element.show();
     }
-    window.FJ = {
-        dropdown: function(settings) {
-            if (!settings || settings.length === 0) {
-                settings = [
-                    {
-                        page: ".*",
-                        selector: "select"
-                    }
-                ]
-            }
-            settings.forEach((setting) => {
-                if (!location.href.match(new RegExp(setting.page))) {
-                    console.log("Page '%s' is not matched.", setting.page);
-                    return false;
-                }
-                document.querySelectorAll(setting.selector).forEach(FJ.render);
-            });
-        },
-        render: function(select) {
-            let dropdown = new Dropdown(select);
-            dropdown.render();
-        }
-    };
-    FJ.dropdown();
-})(window);
+});
+
+$("select").each(function() {
+    if (this.multiple) {
+        return true;
+    }
+    $(this).combobox();
+});
