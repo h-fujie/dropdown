@@ -125,15 +125,32 @@ $.widget("custom.combobox", {
     }
 });
 
-$(function() {
-    chrome.storage.local.get(["settings"], function(items) {
-        //
-    });
-});
-
-$("select").each(function() {
+let combobox = function() {
     if (this.multiple) {
         return true;
     }
     $(this).combobox();
+};
+
+$(function() {
+    chrome.storage.local.get(["settings"], function(items) {
+        let settings = items.settings;
+        if (!settings || settings.length === 0) {
+            settings = [
+                {
+                    url: ".*"
+                }
+            ];
+        }
+        settings.forEach((setting) => {
+            if (!location.href.match(new RegExp(setting.url))) {
+                return true;
+            }
+            let selector = setting.selector;
+            if (!selector || selector === "") {
+                selector = "select";
+            }
+            $(selector).each(combobox);
+        });
+    });
 });
