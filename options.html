@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8"/>
+        <title>Dropdown Customizer Options</title>
+        <script src="/js/options.js"></script>
+        <link rel="stylesheet" href="/css/options.css"/>
+    </head>    
+    <body>
+        <h3 class="header">コンボボックス有効化設定</h3>
+        <textarea id="settings" class="settings" placeholder="【入力例】
+[
+  {
+    /*
+     * 1. 有効にするサイトパターン
+     *    ※必須
+     */
+    &quot;url&quot;: &quot;https?://localhost(:\d+)?/.*&quot;,
+    /* 
+     * 2. 有効にするドロップダウンセレクタ
+     *    ※省略時は `select`
+     */
+    &quot;selector&quot;: &quot;select&quot;
+  }
+]"></textarea>
+        <div class="footer">
+            <button id="save">保存</button>
+        </div>
+    </body>
+</html>

@@ -8,15 +8,22 @@
             "matches": ["http://*/*", "https://*/*"],
             "css": [
                 "ext/jquery/jquery-ui.min.css",
-                "dropdown.css"
+                "css/dropdown.css"
             ],
             "js": [
                 "ext/jquery/jquery-3.7.1.min.js",
                 "ext/jquery/jquery-ui.min.js",
-                "dropdown.js"
+                "js/dropdown.js"
             ],
             "run_at": "document_end",
             "all_frames": false
         }
-    ]
+    ],
+    "permissions": [
+        "storage"
+    ],
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": false
+    }
 }

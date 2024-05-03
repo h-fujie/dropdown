@@ -47,11 +47,6 @@ $.widget("custom.combobox", {
         let wasOpen = false;
 
         $("<a>").attr("tabIndex", -1)
-            .tooltip({
-                classes: {
-                    "ui-tooltip": "ui-state-highlight"
-                }
-            })
             .appendTo(this.wrapper)
             .button({
                 icons: {
@@ -128,6 +123,12 @@ $.widget("custom.combobox", {
         this.wrapper.remove();
         this.element.show();
     }
+});
+
+$(function() {
+    chrome.storage.local.get(["settings"], function(items) {
+        //
+    });
 });
 
 $("select").each(function() {

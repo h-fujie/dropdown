@@ -1,0 +1,27 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "メイリオ", sans-serif;
+}
+body {
+    padding: 10px;
+}
+.header {
+    height: 20pt;
+    line-height: 20pt;
+}
+.settings {
+    font-family: "Consolas", sans-serif;
+    width: calc(100% - 2px);
+    height: calc(100vh - 60pt - 25px);
+}
+.footer {
+    height: 40pt;
+    text-align: right;
+}
+.footer button {
+    width: 80px;
+    height: 20pt;
+    line-height: 20pt;
+    margin-top: 10pt;
+}
