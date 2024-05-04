@@ -2,7 +2,7 @@
   "name": "dropdown",
   "version": "1.0.0",
   "description": "",
-  "main": "options.js",
+  "main": "dropdown.js",
   "scripts": {
     "build": "webpack --mode=production"
   },
