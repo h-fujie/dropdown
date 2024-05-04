@@ -10,7 +10,10 @@ body {
     height: 20pt;
     line-height: 20pt;
 }
-.settings {
+#message {
+    color: red;
+}
+#settings {
     font-family: "Consolas", sans-serif;
     width: calc(100% - 2px);
     height: calc(100vh - 60pt - 25px);

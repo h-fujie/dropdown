@@ -1,0 +1,23 @@
+{
+    "name": "Dropdown Customizer",
+    "version": "0.0.0.1",
+    "manifest_version": 3,
+    "description": "ドロップダウンをコンボボックスに変換します",
+    "content_scripts": [
+        {
+            "matches": ["http://*/*", "https://*/*"],
+            "js": [
+                "dropdown.js"
+            ],
+            "run_at": "document_end",
+            "all_frames": false
+        }
+    ],
+    "permissions": [
+        "storage"
+    ],
+    "options_ui": {
+        "page": "options/options.html",
+        "open_in_tab": false
+    }
+}

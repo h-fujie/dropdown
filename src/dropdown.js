@@ -1,3 +1,16 @@
+import $ from "jquery";
+import "jquery-ui/ui/widgets/autocomplete.js";
+import "jquery-ui/ui/widgets/button.js";
+import "jquery-ui/ui/widgets/menu.js";
+import "jquery-ui/ui/widgets/tooltip.js";
+import "jquery-ui/themes/base/autocomplete.css";
+import "jquery-ui/themes/base/button.css";
+import "jquery-ui/themes/base/core.css";
+import "jquery-ui/themes/base/menu.css";
+import "jquery-ui/themes/base/theme.css";
+import "jquery-ui/themes/base/tooltip.css";
+import "./dropdown.css"
+
 "use strict";
 $.widget("custom.combobox", {
     _create: function() {
@@ -13,6 +26,7 @@ $.widget("custom.combobox", {
     _createAutocomplete: function() {
         let selected = this.element.children(":selected");
         let value = selected.val() ? selected.text() : "";
+        let $select = this.element;
 
         this.input = $("<input>")
             .appendTo(this.wrapper)
@@ -22,7 +36,10 @@ $.widget("custom.combobox", {
             .autocomplete({
                 delay: 0,
                 minLength: 0,
-                source: this._source.bind(this)
+                source: this._source.bind(this),
+                change: function(event, ui) {
+                    $select.change();
+                }
             })
             .tooltip({
                 classes: {
