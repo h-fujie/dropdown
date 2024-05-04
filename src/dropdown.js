@@ -17,16 +17,55 @@ $.widget("custom.combobox", {
         this.wrapper = $("<span>")
             .addClass("fj-combobox")
             .insertAfter(this.element);
+        this._selectStyle();
 
         this.element.hide();
         this._createAutocomplete();
         this._createShowAllButton();
     },
 
+    _selectStyle: function() {
+        this.selectStyle = {
+            height: Math.ceil(this.element.outerHeight()),
+            width: Math.ceil(this.element.outerWidth()),
+            margin: {
+                top: Math.ceil(parseFloat(this.element.css("margin-top"))),
+                right: Math.ceil(parseFloat(this.element.css("margin-right"))),
+                bottom: Math.ceil(parseFloat(this.element.css("margin-bottom"))),
+                left: Math.ceil(parseFloat(this.element.css("margin-left")))
+            },
+            padding: {
+                top: Math.ceil(parseFloat(this.element.css("padding-top"))),
+                right: Math.ceil(parseFloat(this.element.css("padding-right"))),
+                bottom: Math.ceil(parseFloat(this.element.css("padding-bottom"))),
+                left: Math.ceil(parseFloat(this.element.css("padding-left")))
+            },
+            font: {
+                size: Math.ceil(parseFloat(this.element.css("font-size")))
+            }
+        };
+    },
+
+    _modifyInputStyle: function() {
+        let formatFourPx = function(px) {
+            return `${px.top}px ${px.right}px ${px.bottom}px ${px.left}px`;
+        };
+        this.input
+            .css("height", `${this.selectStyle.height}px`)
+            .css("width", `${this.selectStyle.width}px`)
+            .css("margin", formatFourPx(this.selectStyle.margin))
+            .css("padding", formatFourPx(this.selectStyle.padding))
+            .css("font-size", `${this.selectStyle.font.size}px`);
+    },
+
+    _modifyButtonStyle: function() {
+        this.button
+            .css("height", `${this.selectStyle.height + 1}px`);
+    },
+
     _createAutocomplete: function() {
         let selected = this.element.children(":selected");
         let value = selected.val() ? selected.text() : "";
-        let $select = this.element;
 
         this.input = $("<input>")
             .appendTo(this.wrapper)
@@ -36,16 +75,14 @@ $.widget("custom.combobox", {
             .autocomplete({
                 delay: 0,
                 minLength: 0,
-                source: this._source.bind(this),
-                change: function(event, ui) {
-                    $select.change();
-                }
+                source: this._source.bind(this)
             })
             .tooltip({
                 classes: {
                     "ui-tooltip": "ui-state-highlight"
                 }
             });
+        this._modifyInputStyle();
 
         this._on(this.input, {
             autocompleteselect: function(event, ui) {
@@ -63,7 +100,7 @@ $.widget("custom.combobox", {
         let input = this.input
         let wasOpen = false;
 
-        $("<a>").attr("tabIndex", -1)
+        this.button = $("<a>").attr("tabIndex", -1)
             .appendTo(this.wrapper)
             .button({
                 icons: {
@@ -87,6 +124,7 @@ $.widget("custom.combobox", {
                 // Pass empty string as value to search for, displaying all results
                 input.autocomplete("search", "");
             });
+        this._modifyButtonStyle();
     },
 
     _source: function(request, response) {
@@ -166,6 +204,10 @@ $(function() {
             let selector = setting.selector;
             if (!selector || selector === "") {
                 selector = "select";
+            }
+            let ignoreClosest = setting.ignoreClosest;
+            if (ignoreClosest && $(selector).closest(ignoreClosest).length > 0) {
+                return true;
             }
             $(selector).each(combobox);
         });
