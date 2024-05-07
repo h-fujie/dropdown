@@ -9,7 +9,7 @@ import "jquery-ui/themes/base/core.css";
 import "jquery-ui/themes/base/menu.css";
 import "jquery-ui/themes/base/theme.css";
 import "jquery-ui/themes/base/tooltip.css";
-import "./dropdown.css"
+import "./dropdown.css";
 
 "use strict";
 $.widget("custom.combobox", {
@@ -25,25 +25,30 @@ $.widget("custom.combobox", {
     },
 
     _selectStyle: function() {
+        let $el = this.element.clone()
+            .css("display", "")
+            .css("visibility", "hidden")
+            .appendTo(document.body);
         this.selectStyle = {
-            height: Math.ceil(this.element.outerHeight()),
-            width: Math.ceil(this.element.outerWidth()),
+            height: Math.ceil($el.outerHeight()),
+            width: Math.ceil($el.outerWidth()),
             margin: {
-                top: Math.ceil(parseFloat(this.element.css("margin-top"))),
-                right: Math.ceil(parseFloat(this.element.css("margin-right"))),
-                bottom: Math.ceil(parseFloat(this.element.css("margin-bottom"))),
-                left: Math.ceil(parseFloat(this.element.css("margin-left")))
+                top: Math.ceil(parseFloat($el.css("margin-top"))),
+                right: Math.ceil(parseFloat($el.css("margin-right"))),
+                bottom: Math.ceil(parseFloat($el.css("margin-bottom"))),
+                left: Math.ceil(parseFloat($el.css("margin-left")))
             },
             padding: {
-                top: Math.ceil(parseFloat(this.element.css("padding-top"))),
-                right: Math.ceil(parseFloat(this.element.css("padding-right"))),
-                bottom: Math.ceil(parseFloat(this.element.css("padding-bottom"))),
-                left: Math.ceil(parseFloat(this.element.css("padding-left")))
+                top: Math.ceil(parseFloat($el.css("padding-top"))),
+                right: Math.ceil(parseFloat($el.css("padding-right"))),
+                bottom: Math.ceil(parseFloat($el.css("padding-bottom"))),
+                left: Math.ceil(parseFloat($el.css("padding-left")))
             },
             font: {
-                size: Math.ceil(parseFloat(this.element.css("font-size")))
+                size: Math.ceil(parseFloat($el.css("font-size")))
             }
         };
+        $el.remove();
     },
 
     _modifyInputStyle: function() {
@@ -66,6 +71,7 @@ $.widget("custom.combobox", {
     _createAutocomplete: function() {
         let selected = this.element.children(":selected");
         let value = selected.val() ? selected.text() : "";
+        let select = this.element[0];
 
         this.input = $("<input>")
             .appendTo(this.wrapper)
@@ -75,7 +81,10 @@ $.widget("custom.combobox", {
             .autocomplete({
                 delay: 0,
                 minLength: 0,
-                source: this._source.bind(this)
+                source: this._source.bind(this),
+                select: function(event, ui) {
+                    select.dispatchEvent(new Event("change"));
+                }
             })
             .tooltip({
                 classes: {
