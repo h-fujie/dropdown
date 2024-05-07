@@ -23,13 +23,12 @@
     ```cmd
     npm run build
     ```
-4. ブラウザの拡張機能の開発者モードを有効化する
+
+## 設定ガイド
+
+1. ブラウザの拡張機能の開発者モードを有効化する
     * Edgeの場合
         * edge://extensions/
     * Chromeの場合
         * chrome://extensions/
-5. `dist`フォルダを展開する
-
-## 設定ガイド
-
-**TODO**
+2. `dist`フォルダを展開する
