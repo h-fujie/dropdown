@@ -69,7 +69,7 @@ $.widget("custom.combobox", {
     },
 
     _createAutocomplete: function() {
-        let selected = this.element.children(":selected");
+        let selected = this.element.find(":selected");
         let value = selected.val() ? selected.text() : "";
         let select = this.element[0];
 
@@ -138,7 +138,7 @@ $.widget("custom.combobox", {
 
     _source: function(request, response) {
         let matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term),"i");
-        response(this.element.children("option").map(function() {
+        response(this.element.find("option").map(function() {
             var text = $(this).text();
             if (this.value && (!request.term || matcher.test(text)))
                 return {
@@ -160,7 +160,7 @@ $.widget("custom.combobox", {
         let value = this.input.val();
         let valueLowerCase = value.toLowerCase();
         let valid = false;
-        this.element.children("option").each(function() {
+        this.element.find("option").each(function() {
             if ($(this).text().toLowerCase() === valueLowerCase) {
                 this.selected = valid = true;
                 return false;
